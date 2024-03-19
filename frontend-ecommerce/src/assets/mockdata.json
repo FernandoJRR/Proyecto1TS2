@@ -1,0 +1,138 @@
+{
+    "categorias": {
+        "1": {
+            "id": 1,
+            "nombre": "Libreria",
+            "id_categoria_padre": true,
+            "es_hoja": true
+        }
+    },
+    "usuarios": {
+        "admin1": {
+            "username": "admin1",
+            "nombre": "Marcos",
+            "password": "pass123",
+            "tipo": "admin"
+        },
+        "usuario1": {
+            "username": "usuario1",
+            "nombre": "Arturo",
+            "password": "password",
+            "tipo": "usuario"
+        },
+        "usuario2": {
+            "username": "usuario2",
+            "nombre": "Arturo",
+            "password": "password",
+            "tipo": "usuario"
+        }
+    },
+    "cuentas": {
+        "usuario1": {
+            "balance": 0
+        }
+    },
+    "tipo_cambio": {
+        "cacao_por_quetzal": 10
+    },
+    "productos_servicios": {
+        "1": {
+            "id": 1,
+            "nombre": "Cuaderno de dibujo",
+            "descripcion": "Es un cuaderno de dibujo normal para dibujar",
+            "precio": 20,
+            "usuario_vendedor": "usuario1",
+            "fecha_publicacion": "2024-03-14",
+            "id_categoria": 1,
+            "usuario_autorizador": null,
+            "fecha_autorizacion": null,
+            "usuario_comprador": null,
+            "fecha_compra": null,
+            "es_servicio": false
+        },
+        "2": {
+            "id": 2,
+            "nombre": "Realizacion de pulseras",
+            "descripcion": "Servicio de realizacion de pulseras de colores",
+            "precio": 15.5,
+            "usuario_vendedor": "usuario2",
+            "fecha_publicacion": "2024-03-14",
+            "id_categoria": 1,
+            "usuario_autorizador": "admin1",
+            "fecha_autorizacion": "2024-03-19",
+            "usuario_comprador": null,
+            "fecha_compra": null,
+            "es_servicio": true
+        },
+        "3": {
+            "id": 3,
+            "nombre": "Lectura de cuentos",
+            "descripcion": "Servicio de lectura de cuentos con duracion de 1 hora",
+            "precio": 50,
+            "usuario_vendedor": "usuario1",
+            "fecha_publicacion": "2024-03-14",
+            "id_categoria": 1,
+            "usuario_autorizador": "admin1",
+            "fecha_autorizacion": "2024-03-15",
+            "usuario_comprador": "usuario2",
+            "fecha_compra": "2024-03-19",
+            "es_servicio": true
+        },
+        "4": {
+            "id": 4,
+            "nombre": "Collar de jade",
+            "descripcion": "Es un collar e jade con un nahual grabdo",
+            "precio": 100.5,
+            "usuario_vendedor": "usuario2",
+            "fecha_publicacion": "2024-03-14",
+            "id_categoria": 1,
+            "usuario_autorizador": null,
+            "fecha_autorizacion": null,
+            "usuario_comprador": null,
+            "fecha_compra": null,
+            "es_servicio": false
+        },
+        "5": {
+            "id": 5,
+            "nombre": "Kit de acuarelas",
+            "descripcion": "Kit con diferentes tipos de acuarelas",
+            "precio": 30,
+            "usuario_vendedor": "usuario1",
+            "fecha_publicacion": "2024-03-14",
+            "id_categoria": 1,
+            "usuario_autorizador": null,
+            "fecha_autorizacion": null,
+            "usuario_comprador": null,
+            "fecha_compra": null,
+            "es_servicio": false
+        },
+        "6": {
+            "id": 6,
+            "nombre": "Programacion de Pagina Web",
+            "descripcion": "Servicio de programacion de paginas web",
+            "precio": 100,
+            "usuario_vendedor": "usuario2",
+            "fecha_publicacion": "2024-03-15",
+            "id_categoria": 1,
+            "usuario_autorizador": null,
+            "fecha_autorizacion": null,
+            "usuario_comprador": null,
+            "fecha_compra": null,
+            "es_servicio": true
+        },
+        "7": {
+            "id": 7,
+            "nombre": "Teclado Mecanico",
+            "descripcion": "Tecado mecanico con switches rojos, seminuevo",
+            "precio": 200,
+            "usuario_vendedor": "usuario1",
+            "fecha_publicacion": "2024-03-15",
+            "id_categoria": 1,
+            "usuario_autorizador": "admin1",
+            "fecha_autorizacion": "2024-03-15",
+            "usuario_comprador": null,
+            "fecha_compra": null,
+            "es_servicio": false
+        }
+    }
+}
