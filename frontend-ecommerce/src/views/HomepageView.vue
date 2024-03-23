@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <h1 style="font-family: 'Monaco', monospace; color: #fcd667">Ultimos Productos</h1>
-    <v-container v-for="item in productos_autorizados" :key="item.id">
+    <v-container v-for="item in productos_homepage as any[]" :key="item.id">
       <ProductCard
         :id="item.id"
         :tipo="item.es_servicio ? 'Servicio' : 'Producto'"
@@ -9,6 +9,7 @@
         :precio="item.precio"
         :vendedor="item.usuario_vendedor"
         :fecha_publicacion="item.fecha_publicacion"
+        :imagen_publicacion="item.imagenProductoServicio.imagen_base64"
       />
     </v-container>
   </v-container>
@@ -27,7 +28,7 @@ export default {
   data: () => ({
     isFetching: true,
 
-    productos_autorizados: ref(),
+    productos_homepage: [],
 
     username: localStorage.getItem('user'),
     userType: localStorage.getItem('userType'),
@@ -41,20 +42,20 @@ export default {
     async comprar() {
       const { valid } = await (this.$refs.formComprar as any).validate()
       if (!valid) return
+    },
+    async getProductosHomePage() {
+      return await fetch(`http://localhost:8080/producto-servicio/productos-homepage/${this.username}`, {
+        method: 'GET'
+      })
     }
   },
   async created() {
-    this.productos_autorizados = ref(
-      Object.entries(mockdata.productos_servicios)
-        .filter(([, value]) => value.usuario_autorizador != null)
-        .filter(([, value]) => value.usuario_comprador == null)
-        .reduce((acc: any, [key, value]) => {
-          acc[key] = value
-          return acc
-        }, {})
-    )
-    this.user = ref(mockdata.usuarios[this.username as keyof typeof mockdata.usuarios])
-    this.isFetching = false
+    this.getProductosHomePage()
+      .then((response) => response.json())
+      .then((data) => {
+        this.productos_homepage = data
+        this.isFetching = false
+      })
   }
 }
 </script>

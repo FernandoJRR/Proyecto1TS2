@@ -30,6 +30,9 @@
     "cuentas": {
         "usuario1": {
             "balance": 0
+        },
+        "usuario2": {
+            "balance": 0
         }
     },
     "tipo_cambio": {

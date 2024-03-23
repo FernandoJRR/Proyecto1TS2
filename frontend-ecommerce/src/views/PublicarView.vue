@@ -37,7 +37,16 @@
         style="width: 75%"
         required
       ></v-text-field>
-      <v-btn @click="publicar">Registrar</v-btn>
+      <v-row justify="center">
+        <v-col cols="5">
+          <v-file-input @change="uploadImage" label="Imagen producto" />
+        </v-col>
+        <v-col cols="5">
+          <v-img :src="imagen" width="300" cover />
+        </v-col>
+      </v-row>
+      <br v-if="imagen != ''" />
+      <v-btn @click="publicar">Registrar Producto</v-btn>
       <h3 style="color: red">{{ detalle }}</h3>
     </v-form>
   </v-container>
@@ -59,29 +68,72 @@ export default {
     descripcion: '',
     descripcionRules: [(value: any) => !!value || 'Descripcion requerida!'],
     precio: 0,
-    precioRules: [(value: any) => !!value || 'Precio requerido!'],
+    precioRules: [
+      (value: any) => !!value || 'Precio requerido',
+      (value: any) => value > 0 || 'El precio ingresado no es valido'
+    ],
     detalle: '',
 
     user: ref(localStorage.getItem('user')),
     cuenta: ref(),
 
-    taza_cambio: ref(mockdata.tipo_cambio.cacao_por_quetzal)
+    taza_cambio: ref(mockdata.tipo_cambio.cacao_por_quetzal),
+
+    imagen: ''
   }),
   methods: {
     async publicar() {
       const { valid } = await (this.$refs.form as any).validate()
       if (!valid) return
-      let response: any
-      response = {}
-      if (this.precio == null || this.precio < 0 || this.precio == 0) {
-        response.error = 'El precio ingresado no es valido'
-      }
+      const response = await this.createPublicacion({
+        es_servicio: this.tipoPublicacion == 'Producto' ? false : true,
+        nombre: this.nombre,
+        descripcion: this.descripcion,
+        precio: this.precio,
+        imagen: this.imagen,
+        usuario_vendedor: this.user
+      })
+      const data = await response.json()
       //Se comprueba si las credenciales son correctas
-      if (response.error != null) {
-        console.log('error, ' + response.error)
-        this.detalle = response.error
+      if (response.status != 200) {
+        this.detalle = data
       } else {
-        toast('Producto registrado exitosamente')
+        ;(this.$refs.form as any).reset()
+        if (data.fecha_autorizacion != null) toast('Producto registrado y autorizado exitosamente')
+        else toast('Producto registrado exitosamente')
+      }
+    },
+    async createPublicacion(input: any) {
+      return await fetch(`http://localhost:8080/producto-servicio/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input)
+      })
+    },
+    uploadImage(event: any) {
+      const HEIGHT = 400
+      const QUALITY = 5 //Este valor es un porcentaje desde 1 a 100
+      let fileSelect = event.target.files
+      if (fileSelect.length > 0) {
+        let file = fileSelect[0]
+        let fileReader = new FileReader()
+        fileReader.onload = (FileLoadEvent) => {
+          let result = FileLoadEvent.target!.result
+          console.log(result)
+          let img: any = document.createElement('img')
+          img.src = result
+          img.onload = (event: any) => {
+            let canvas = document.createElement('canvas')
+            let ratio = HEIGHT / event.target.height
+            canvas.height = HEIGHT
+            canvas.width = event.target.width * ratio
+            const context = canvas.getContext('2d')
+            context!.drawImage(img, 0, 0, canvas.width, canvas.height)
+            let new_img_url = context!.canvas.toDataURL('image/jpeg', QUALITY)
+            this.imagen = new_img_url
+          }
+        }
+        fileReader.readAsDataURL(file)
       }
     }
   },

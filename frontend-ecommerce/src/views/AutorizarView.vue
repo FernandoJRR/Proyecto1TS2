@@ -39,7 +39,9 @@
         <th class="text-left">Vendedor</th>
         <th class="text-left">Precio</th>
         <th class="text-left">Fecha de Publicacion</th>
+        <th class="text-left">Usuario Autorizador</th>
         <th class="text-left">Fecha Autorizacion</th>
+        <th class="text-left">Estado</th>
         <th class="text-left">Acciones</th>
       </tr>
     </thead>
@@ -50,9 +52,14 @@
         <td>{{ item.usuario_vendedor }}</td>
         <td>{{ item.precio }}</td>
         <td>{{ item.fecha_publicacion }}</td>
+        <td>{{ item.usuario_autorizador }}</td>
         <td>{{ item.fecha_autorizacion }}</td>
+        <td>{{ item.usuario_comprador == null ? 'Aprobado' : 'Comprado' }}</td>
         <td>
-          <v-btn variant="plain" @click="verProducto(item.id)">ver</v-btn>
+          <v-btn variant="plain" @click="verProducto(item.id)">Ver</v-btn>
+          <v-btn v-if="item.usuario_comprador == null" variant="plain" @click="desaprobarProducto(item.id)"
+            >Desaprobar</v-btn
+          >
         </td>
       </tr>
     </tbody>
@@ -63,10 +70,13 @@
 import mockdata from '@/assets/mockdata.json'
 import router from '@/router'
 import { ref } from 'vue'
+import { toast } from 'vue3-toastify'
 export default {
   data: () => ({
     productos_por_autorizar: ref(),
     productos_autorizados: ref(),
+
+    username: localStorage.getItem('user'),
 
     isFetching: true
   }),
@@ -74,27 +84,84 @@ export default {
     verProducto(id_producto: number) {
       router.push('producto/' + id_producto)
     },
-    aprobarProducto(id_producto: number) {
-      console.log(id_producto)
+    async aprobarProducto(id_producto: number) {
+      const response = await this.approveProductoServicio(id_producto, {
+        usuario_autorizador: this.username
+      })
+      const data = response.json()
+
+      if (response.status == 200) {
+        toast('Aprobacion exitosa')
+
+        this.getProductosPorAutorizar()
+          .then((response) => response.json())
+          .then((data) => {
+            this.productos_por_autorizar = data
+          })
+        this.getProductosAutorizados()
+          .then((response) => response.json())
+          .then((data) => {
+            this.productos_autorizados = data
+          })
+      }
+    },
+    async desaprobarProducto(id_producto: number) {
+      const response = await this.disapproveProductoServicio(id_producto, {
+        usuario_autorizador: this.username
+      })
+      const data = response.json()
+
+      if (response.status == 200) {
+        toast('Desprobacion exitosa')
+
+        this.getProductosPorAutorizar()
+          .then((response) => response.json())
+          .then((data) => {
+            this.productos_por_autorizar = data
+          })
+        this.getProductosAutorizados()
+          .then((response) => response.json())
+          .then((data) => {
+            this.productos_autorizados = data
+          })
+      }
+    },
+    async approveProductoServicio(id_producto: number, input: any) {
+      return await fetch(`http://localhost:8080/producto-servicio/aprobar/${id_producto}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input)
+      })
+    },
+    async disapproveProductoServicio(id_producto: number, input: any) {
+      return await fetch(`http://localhost:8080/producto-servicio/desaprobar/${id_producto}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input)
+      })
+    },
+    async getProductosPorAutorizar() {
+      return await fetch(`http://localhost:8080/producto-servicio/productos-por-aprobar`, {
+        method: 'GET'
+      })
+    },
+    async getProductosAutorizados() {
+      return await fetch(`http://localhost:8080/producto-servicio/productos-aprobados`, {
+        method: 'GET'
+      })
     }
   },
   async created() {
-    this.productos_por_autorizar = ref(
-      Object.entries(mockdata.productos_servicios)
-        .filter(([, value]) => value.usuario_autorizador == null)
-        .reduce((acc: any, [key, value]) => {
-          acc[key] = value
-          return acc
-        }, {})
-    )
-    this.productos_autorizados = ref(
-      Object.entries(mockdata.productos_servicios)
-        .filter(([, value]) => value.usuario_autorizador != null)
-        .reduce((acc: any, [key, value]) => {
-          acc[key] = value
-          return acc
-        }, {})
-    )
+    this.getProductosPorAutorizar()
+      .then((response) => response.json())
+      .then((data) => {
+        this.productos_por_autorizar = data
+      })
+    this.getProductosAutorizados()
+      .then((response) => response.json())
+      .then((data) => {
+        this.productos_autorizados = data
+      })
     this.isFetching = false
   }
 }

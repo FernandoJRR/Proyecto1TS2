@@ -4,24 +4,25 @@
       <v-icon icon="mdi-account" /> Perfil de {{ username }}
     </h1>
     <v-text-field
-      v-model="user.nombre"
+      v-model="user_data.nombre"
       label="Nombre"
       prepend-icon="mdi-account"
       variant="outlined"
       style="width: 50%"
+      :loading="isFetching"
       disabled
     ></v-text-field>
-
     <v-text-field
-      v-model="user.username"
+      v-model="user_data.username"
       label="Username"
       prepend-icon="mdi-account"
       variant="outlined"
       style="width: 50%"
+      :loading="isFetching"
       disabled
     ></v-text-field>
 
-    <v-form ref="form" @submit.prevent="submit">
+    <v-form ref="form" @submit.prevent="cambiarPassword">
       <v-text-field
         v-model="password"
         :prepend-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
@@ -46,7 +47,7 @@
         required
       ></v-text-field>
       <h3 style="color: red">{{ detalle }}</h3>
-      <v-btn @click="submit">Cambiar Password</v-btn>
+      <v-btn @click="cambiarPassword">Cambiar Password</v-btn>
     </v-form>
     <br />
     <br />
@@ -54,18 +55,82 @@
       <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
         <img src="@/assets/cacao.png" width="30" /> Balance de Cuenta:
         <p v-if="isFetching" style="display: inline">...</p>
-        <p v-else style="display: inline">{{ cuenta.balance }}</p>
+        <p v-else style="display: inline">{{ cuenta_data.balance }}</p>
       </h1>
       <br />
       <br />
       <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
-        <v-icon icon="mdi-account" /> Productos y Servicios Vendidos
+        <v-icon icon="mdi-account" /> Productos y Servicios Publicados
       </h1>
+
+      <v-table theme="dark">
+        <thead>
+          <tr>
+            <th class="text-left">Tipo</th>
+            <th class="text-left">Nombre</th>
+            <th class="text-left">Vendedor</th>
+            <th class="text-left">Precio</th>
+            <th class="text-left">Fecha de Publicacion</th>
+            <th class="text-left">Fecha de Autorizacion</th>
+            <th class="text-left">Comprador</th>
+            <th class="text-left">Fecha de Compra</th>
+            <th class="text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in productos_publicados" :key="item.id">
+            <td>{{ item.es_servicio ? 'Servicio' : 'Producto' }}</td>
+            <td>{{ item.nombre }}</td>
+            <td>{{ item.usuario_vendedor }}</td>
+            <td>{{ item.precio }}</td>
+            <td>{{ item.fecha_publicacion }}</td>
+            <td>
+              {{
+                item.fecha_autorizacion == null
+                  ? 'Pendiente de autorizacion'
+                  : item.fecha_autorizacion
+              }}
+            </td>
+            <td>{{ item.usuario_comprador == null ? '' : item.usuario_comprador }}</td>
+            <td>{{ item.fecha_compra == null ? '' : item.fecha_compra }}</td>
+            <td>
+              <v-btn variant="plain" @click="verProducto(item.id)">ver</v-btn>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
       <br />
       <br />
       <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
         <v-icon icon="mdi-account" /> Productos y Servicios Comprados
       </h1>
+
+      <v-table theme="dark">
+        <thead>
+          <tr>
+            <th class="text-left">Tipo</th>
+            <th class="text-left">Nombre</th>
+            <th class="text-left">Vendedor</th>
+            <th class="text-left">Precio</th>
+            <th class="text-left">Fecha de Publicacion</th>
+            <th class="text-left">Fecha de Compra</th>
+            <th class="text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in productos_comprados" :key="item.id">
+            <td>{{ item.es_servicio ? 'Servicio' : 'Producto' }}</td>
+            <td>{{ item.nombre }}</td>
+            <td>{{ item.usuario_vendedor }}</td>
+            <td>{{ item.precio }}</td>
+            <td>{{ item.fecha_publicacion }}</td>
+            <td>{{ item.fecha_compra == null ? '' : item.fecha_compra }}</td>
+            <td>
+              <v-btn variant="plain" @click="verProducto(item.id)">ver</v-btn>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
     </v-container>
   </v-container>
 </template>
@@ -81,39 +146,114 @@ export default {
 
     username: localStorage.getItem('user'),
     userType: localStorage.getItem('userType'),
-    user: ref(),
-    cuenta: ref(),
 
     show: false,
     password: '',
     passwordRules: [(value: any) => !!value || 'Password requerido!'],
     password_rewrite: '',
     passwordRewriteRules: [(value: any) => !!value || 'Password requerido!'],
-    detalle: ''
+    detalle: '',
+    user: ref(),
+    cuenta: ref(),
+
+    productos_publicados: ref(),
+    productos_comprados: ref()
   }),
-  methods: {
-    async submit() {
-      const { valid } = await (this.$refs.form as any).validate()
-      if (!valid) return
-      let response: any
-      response = {}
-      if (this.password != this.password_rewrite) {
-        response.error = 'Las password no coinciden'
+  computed: {
+    user_data: {
+      get: function () {
+        if (typeof this.user !== 'undefined') {
+          return this.user
+        } else {
+          return false
+        }
+      },
+      set: function (val: any) {
+        this.user = val
       }
-      //Se comprueba si las credenciales son correctas
-      if (response.error != null) {
-        console.log('error, ' + response.error)
-        this.detalle = response.error
-      } else {
-        this.detalle = ''
-        toast('Password cambiada exitosamente!', { position: toast.POSITION.BOTTOM_CENTER })
+    },
+    cuenta_data: {
+      get: function () {
+        if (typeof this.cuenta !== 'undefined') {
+          return this.cuenta
+        } else {
+          return false
+        }
+      },
+      set: function (val: any) {
+        this.cuenta = val
       }
     }
   },
+
+  methods: {
+    async cambiarPassword() {
+      const { valid } = await (this.$refs.form as any).validate()
+      if (!valid) return
+      if (this.password != this.password_rewrite) {
+        this.detalle = 'Las password no coinciden'
+      }
+
+      const response = await this.changePassword({
+        username: this.username,
+        password: this.password
+      })
+      const data = await response.json()
+      //Se comprueba si las credenciales son correctas
+      if (response.status != 200) {
+        this.detalle = data
+      } else {
+        this.detalle = "";
+        (this.$refs.form as any).reset();
+        toast(data, { position: toast.POSITION.BOTTOM_CENTER })
+      }
+    },
+    verProducto(id_producto: number) {
+      router.push('producto/' + id_producto)
+    },
+    async changePassword(input: any) {
+      return await fetch(`http://localhost:8080/usuario/change-password`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input)
+      })
+    },
+    async getPerfil() {
+      return await fetch(`http://localhost:8080/usuario/${this.username}`, {
+        method: 'GET'
+      })
+    },
+    async getPublicacionesUsuario() {
+      return await fetch(`http://localhost:8080/producto-servicio/publicaciones-usuario/${this.username}`, {
+        method: 'GET'
+      })
+    },
+    async getCompradoUsuario() {
+      return await fetch(`http://localhost:8080/producto-servicio/comprado-usuario/${this.username}`, {
+        method: 'GET'
+      })
+    }
+  },
   async created() {
-    this.user = ref(mockdata.usuarios[this.username as keyof typeof mockdata.usuarios])
-    this.cuenta = ref(mockdata.cuentas[this.username as keyof typeof mockdata.cuentas])
-    this.isFetching = false
+    this.getPerfil()
+      .then((response) => response.json())
+      .then((data) => {
+        this.user = data
+        this.cuenta = data.cuenta
+        this.isFetching = false
+      })
+
+    this.getPublicacionesUsuario()
+      .then((response) => response.json())
+      .then((data) => {
+        this.productos_publicados = data
+      })
+
+    this.getCompradoUsuario()
+      .then((response) => response.json())
+      .then((data) => {
+        this.productos_comprados = data
+      })
   }
 }
 </script>

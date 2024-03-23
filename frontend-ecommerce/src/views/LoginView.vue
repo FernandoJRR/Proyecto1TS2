@@ -53,47 +53,21 @@ export default {
     password: '',
     passwordRules: [(value: any) => !!value || 'Password requerido!'],
     detalle: '',
-
-    user: ref()
   }),
   methods: {
     async submit() {
       const { valid } = await (this.$refs.form as any).validate()
       if (!valid) return
-      /*
-      let response = await $fetch(
-        "http://localhost:4500/proyecto-maiz/server-maiz/db_conexion/conexion.php",
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
-          },
-          method: "POST",
-          body: {
-            tipo: "login",
-            username: this.username,
-            password: this.password
-          },
-        }
-      );
-      */
-      let response: any
-      response = {}
-      this.user = mockdata.usuarios[this.username as keyof typeof mockdata.usuarios]
-      if (this.user == null) {
-        response.error = 'El usuario no existe'
-      }
-
-      if (
-        this.password != this.user.password
-      ) {
-        response.error = 'El password ingresado no es correcto'
-      }
+      
+      const response = await this.validateUsuario(this.username, this.password);
+      const data = await response.json();
+      
       //Se comprueba si las credenciales son correctas
-      if (response.error != null) {
-        this.detalle = response.error
+      if (response.status != 200) {
+        this.detalle = data;
       } else {
         localStorage.setItem('user', this.username)
-        switch (this.user.tipo) {
+        switch (data.tipoUsuario.codigo) {
           case 'admin':
             localStorage.setItem('userType', 'admin')
             router.push('/')
@@ -104,6 +78,20 @@ export default {
             break
         }
       }
+    },
+    async validateUsuario(username:string, password:string) 
+    {
+      return await fetch(
+        "http://localhost:8080/usuario/validate",
+        {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            username: username,
+            password: password
+          }),
+        }
+      );
     }
   }
 }
