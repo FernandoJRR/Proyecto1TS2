@@ -41,6 +41,10 @@ const router = createRouter({
           path: 'producto/:id',
           component: () => import('../views/ProductoView.vue')
         },
+        {
+          path: 'editar-producto/:id',
+          component: () => import('../views/EditarProductoView.vue')
+        },
       ]
     },
     {

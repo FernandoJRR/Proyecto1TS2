@@ -52,7 +52,18 @@
           </v-container>
         </v-container>
         <v-container v-else>
-          <h4 v-if="!isFetchingProduct && producto.usuario_comprador == null">En Venta</h4>
+          <v-container v-if="!isFetchingProduct && producto.usuario_comprador == null">
+            <h4>En Venta</h4>
+            <v-btn
+              v-if="producto.usuario_comprador == null"
+              variant="outlined"
+              prepend-icon="mdi-pencil"
+              color="warning"
+              @click="editar"
+            >
+              Editar
+            </v-btn>
+          </v-container>
           <h4 v-else>Comprado</h4>
         </v-container>
       </v-col>
@@ -101,6 +112,9 @@ export default {
     imagen_producto: ''
   }),
   methods: {
+    editar() {
+      router.push(`/editar-producto/${this.producto.id}`)
+    },
     async comprar() {
       if (this.producto.precio > this.cuenta.balance) {
         toast('No cuentas con los fondos para comprar este producto')

@@ -65,7 +65,11 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
+      disponible_por_trueque: {
+        allowNull: false,
+        type: Sequelize.BOOLEAN
+      },
     });
   },
   async down(queryInterface, Sequelize) {

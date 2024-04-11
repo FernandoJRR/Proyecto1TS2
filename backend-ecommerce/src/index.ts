@@ -9,6 +9,7 @@ import usuarioRoutes from "./routes/usuario";
 import tipoCambioRoutes from "./routes/tipo_cambio";
 import cacaoRoutes from "./routes/cacao";
 import productoServicioRoutes from "./routes/producto_servicio";
+import chatsRoutes from "./routes/chat_servicio";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/usuario', usuarioRoutes)
 app.use('/taza-cambio', tipoCambioRoutes)
 app.use('/cacao', cacaoRoutes)
 app.use('/producto-servicio', productoServicioRoutes)
+app.use('/chats', chatsRoutes)
 
 app.listen(port, () => {
     console.log(`[server]: Server is running on port ${port}`);

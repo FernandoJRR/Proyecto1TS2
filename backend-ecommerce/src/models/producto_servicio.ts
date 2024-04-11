@@ -1,6 +1,7 @@
-import { Table, Model, Column, HasMany, HasOne } from "sequelize-typescript";
+import { Table, Model, Column, HasMany, HasOne, BelongsTo } from "sequelize-typescript";
 import database from "../database/database";
 import { ImagenProductoServicio } from "./imagen_producto_servicio";
+import { Reporte } from "./reporte";
 
 @Table({
   tableName: "producto_servicio",
@@ -39,6 +40,7 @@ export class ProductoServicio extends Model {
   declare fecha_baja: Date
   @Column({allowNull: false})
   declare es_servicio: boolean
+  declare disponible_por_trueque: boolean
   
   @HasOne(() => ImagenProductoServicio)
   declare imagenProductoServicio: ImagenProductoServicio;

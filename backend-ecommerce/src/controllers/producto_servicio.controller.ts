@@ -7,6 +7,12 @@ export const getProducto: RequestHandler = async (req, res, next) => {
   res.status(200).json(productos);
 };
 
+export const getBusqueda: RequestHandler = async (req, res, next) => {
+  const busqueda = req.params.busqueda;
+  const productos = await productoServicioService.getBusqueda(busqueda);
+  res.status(200).json(productos);
+};
+
 export const getImagenProductoServicio: RequestHandler = async (req, res, next) => {
   const id_producto = parseInt(req.params.id_producto);
   const imagen = await productoServicioService.getImagenProductoServicio(id_producto);
@@ -88,4 +94,23 @@ export const comprarProducto: RequestHandler = async (req, res, next) => {
   const input = req.body;
   const productos = await productoServicioService.comprarProducto(+id_producto, input);
   res.status(200).json(productos);
+};
+
+export const editarPublicacion: RequestHandler = async (req, res, next) => {
+  const id_producto = req.params.id_producto;
+  const input = req.body;
+  const productos = await productoServicioService.editarPublicacion(+id_producto, input);
+  res.status(200).json(productos);
+};
+
+export const reportarPublicacion: RequestHandler = async (req, res, next) => {
+  const id_producto = req.params.id_producto_servicio;
+  const input = req.body;
+  const productos = await productoServicioService.reportarPublicacion(+id_producto, input);
+  res.status(200).json(productos);
+};
+
+export const reportes: RequestHandler = async (req, res, next) => {
+  const reportes = await productoServicioService.reportes();
+  res.status(200).json(reportes);
 };

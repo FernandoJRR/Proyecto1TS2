@@ -20,6 +20,17 @@ export const guardarImagen = async (imagen: string, nombre_imagen: string) => {
   return nombreArchivo;
 };
 
+export const actualizarImagen = async (imagen: string, nombre_imagen: string) => {
+  const nombreArchivo = `${nombre_imagen}.ib64`;
+  const pathArchivo = `${pathImagenesProductos}/${nombreArchivo}`;
+  fs.writeFile(pathArchivo, imagen, (err) => {
+    if (err) {
+      throw new Error(err.message);
+    }
+  });
+  return nombreArchivo;
+};
+
 export const obtenerImagenProductoServicio = async (nombre_imagen:string) => {
     const filePath = `${pathImagenesProductos}/${nombre_imagen}`;
     const filePathDefault = `${pathImagenesProductos}/default.ib64`;

@@ -1,16 +1,27 @@
 <template>
   <v-container align="center">
-    <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
-      Publicar Producto o Servicio
-    </h1>
-
-    <v-form ref="form" @submit.prevent="publicar">
+    <v-row style="margin-bottom: 3vh">
+      <v-col cols="2">
+        <v-btn variant="outlined" prepend-icon="mdi-arrow-left" @click="volver">Volver</v-btn>
+      </v-col>
+      <v-col cols="8">
+        <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
+          Editar Producto o Servicio
+        </h1>
+      </v-col>
+      <v-col></v-col>
+    </v-row>
+    <v-row justify="center">
+      <v-col cols="5"> </v-col>
+    </v-row>
+    <v-form ref="form" @submit.prevent="editar">
       <v-select
         v-model="tipoPublicacion"
         :rules="tipoPublicacionRules"
         label="Tipo"
         :items="['Producto', 'Servicio']"
         style="width: 75%"
+        disabled
       />
       <v-text-field
         v-model="nombre"
@@ -37,16 +48,23 @@
         style="width: 75%"
         required
       ></v-text-field>
+      <v-file-input @change="uploadImage" label="Imagen producto" style="width: 75%" />
       <v-row justify="center">
         <v-col cols="5">
-          <v-file-input @change="uploadImage" label="Imagen producto" />
+          <h3>Imagen Actual</h3>
+          <v-img
+            v-if="!isFetchingProduct && !isFetchingImage"
+            :src="imagen_producto"
+            width="300"
+          ></v-img>
         </v-col>
-        <v-col cols="5">
+        <v-col v-if="imagen != ''" cols="5">
+          <h3>Nueva Imagen</h3>
           <v-img :src="imagen" width="300" cover />
         </v-col>
       </v-row>
-      <br v-if="imagen != ''" />
-      <v-btn @click="publicar">Registrar</v-btn>
+      <br />
+      <v-btn @click="editar">Actualizar</v-btn>
       <h3 style="color: red">{{ detalle }}</h3>
     </v-form>
   </v-container>
@@ -54,12 +72,15 @@
 
 <script lang="ts">
 import mockdata from '@/assets/mockdata.json'
+import router from '@/router'
 import { ref } from 'vue'
 import { toast } from 'vue3-toastify'
 
 export default {
   data: () => ({
-    isFetching: true,
+    isFetchingProduct: true,
+    isFetchingProfile: true,
+    isFetchingImage: true,
 
     tipoPublicacion: '',
     tipoPublicacionRules: [(value: any) => !!value || 'Tipo de publicacion requerido!'],
@@ -74,38 +95,54 @@ export default {
     ],
     detalle: '',
 
-    user: ref(localStorage.getItem('user')),
-    cuenta: ref(),
+    username: localStorage.getItem('user'),
+    userType: localStorage.getItem('userType'),
 
-    taza_cambio: ref(mockdata.tipo_cambio.cacao_por_quetzal),
-
+    producto: ref(),
+    imagen_producto: '',
     imagen: ''
   }),
   methods: {
-    async publicar() {
+    async editar() {
       const { valid } = await (this.$refs.form as any).validate()
       if (!valid) return
-      const response = await this.createPublicacion({
-        es_servicio: this.tipoPublicacion == 'Producto' ? false : true,
+      const response = await this.updatePublicacion({
         nombre: this.nombre,
         descripcion: this.descripcion,
         precio: this.precio,
-        imagen: this.imagen,
-        usuario_vendedor: this.user
+        imagen: this.imagen
       })
       const data = await response.json()
       //Se comprueba si las credenciales son correctas
       if (response.status != 200) {
         this.detalle = data
       } else {
-        ;(this.$refs.form as any).reset()
-        if (data.fecha_autorizacion != null) toast('Producto registrado y autorizado exitosamente')
-        else toast('Producto registrado exitosamente')
+        toast('Producto actualizado exitosamente')
+        await (this.$refs.form as any).reset()
+        this.imagen = ''
+
+        this.getProducto()
+          .then((response) => response.json())
+          .then((data) => {
+            this.producto = data
+            this.tipoPublicacion = this.producto.es_servicio ? 'Servicio' : 'Producto'
+            this.nombre = this.producto.nombre
+            this.descripcion = this.producto.descripcion
+            this.precio = this.producto.precio
+            this.isFetchingProduct = false
+
+            this.getPublicationImage(this.producto.id)
+              .then((response) => response.json())
+              .then((data) => {
+                this.imagen_producto = data
+                this.isFetchingImage = false
+              })
+          })
       }
     },
-    async createPublicacion(input: any) {
-      return await fetch(`http://localhost:8080/producto-servicio/`, {
-        method: 'POST',
+    async updatePublicacion(input: any) {
+      return await fetch(`http://localhost:8080/producto-servicio/editar/${this.producto.id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input)
       })
@@ -135,11 +172,39 @@ export default {
         }
         fileReader.readAsDataURL(file)
       }
+    },
+    async getProducto() {
+      return await fetch(`http://localhost:8080/producto-servicio/${this.$route.params.id}`, {
+        method: 'GET'
+      })
+    },
+    async getPublicationImage(id_producto: number) {
+      return await fetch(`http://localhost:8080/producto-servicio/imagen/${id_producto}`, {
+        method: 'GET'
+      })
+    },
+    volver() {
+      router.go(-1)
     }
   },
   async created() {
-    this.cuenta = ref(mockdata.cuentas[this.user as keyof typeof mockdata.cuentas])
-    this.isFetching = false
+    this.getProducto()
+      .then((response) => response.json())
+      .then((data) => {
+        this.producto = data
+        this.tipoPublicacion = this.producto.es_servicio ? 'Servicio' : 'Producto'
+        this.nombre = this.producto.nombre
+        this.descripcion = this.producto.descripcion
+        this.precio = this.producto.precio
+        this.isFetchingProduct = false
+
+        this.getPublicationImage(this.producto.id)
+          .then((response) => response.json())
+          .then((data) => {
+            this.imagen_producto = data
+            this.isFetchingImage = false
+          })
+      })
   }
 }
 </script>

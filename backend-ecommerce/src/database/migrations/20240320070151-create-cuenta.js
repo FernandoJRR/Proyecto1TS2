@@ -9,7 +9,10 @@ module.exports = {
         type: Sequelize.STRING,
         references: {model: 'usuario', key: 'username'}
       },
-      balance: {
+      balance_cacao: {
+        type: Sequelize.FLOAT
+      },
+      balance_puntos: {
         type: Sequelize.FLOAT
       },
     });

@@ -13,7 +13,8 @@
     <v-btn v-if="userType == 'admin'" variant="plain" to="/autorizar">Autorizar Productos y Servicios</v-btn>
     <v-btn v-else-if="userType == 'usuario'" variant="plain" to="/publicar">Publicar Producto o Servicio</v-btn>
     <v-btn v-if="userType == 'usuario'" variant="plain" to="/chats">Chats</v-btn>
-    <v-btn v-if="username == null" variant="plain" style="margin-left: 78%" to="/login">Iniciar Sesion</v-btn>
+    <v-btn v-if="username == null" variant="plain" style="margin-left: 67%" to="/login">Iniciar Sesion</v-btn>
+    <v-btn v-if="username == null" variant="plain" to="/registro">Registrarse</v-btn>
     <v-container v-else style="display: inline; margin-left: 13%;">
     <v-btn variant="plain" to="/perfil" prepend-icon="mdi-account">{{ username }}</v-btn>
     <v-btn variant="plain" @click="logout">Cerrar Sesion</v-btn>

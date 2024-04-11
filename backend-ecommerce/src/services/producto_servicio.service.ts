@@ -1,9 +1,11 @@
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { ProductoServicio } from "../models/producto_servicio";
+import { Reporte } from "../models/reporte";
 import sequelize from "../database/database";
 import { ImagenProductoServicio } from "../models/imagen_producto_servicio";
 import {
   guardarImagen,
+  actualizarImagen,
   obtenerImagenProductoServicio,
 } from "../handler/image.handler";
 import { Usuario } from "../models/usuario";
@@ -47,6 +49,36 @@ export async function getProducto(id_producto: number) {
   return productos;
 }
 
+export async function getBusqueda(busqueda: string) {
+  const productos = await ProductoServicio.findAll({
+    where: {
+      nombre: {
+        [Op.like]: `%${busqueda}%`,
+      },
+      fecha_autorizacion: {
+        [Op.not]: null,
+      },
+      fecha_compra: {
+        [Op.is]: null,
+      },
+    },
+    include: { model: ImagenProductoServicio },
+    attributes: {
+      include: [
+        [
+          sequelize.fn(
+            "date_format",
+            sequelize.col("fecha_publicacion"),
+            "%Y-%m-%d"
+          ),
+          "fecha_publicacion",
+        ],
+      ],
+    },
+  });
+  return productos;
+}
+
 export async function getImagenProductoServicio(id_producto: number) {
   const imagen = ImagenProductoServicio.findByPk(id_producto).then((modelo) => {
     return obtenerImagenProductoServicio(modelo!.imagen_base64);
@@ -54,7 +86,9 @@ export async function getImagenProductoServicio(id_producto: number) {
   return imagen;
 }
 
-export async function getProductosServiciosHomepage(usuario_logueado: string|null) {
+export async function getProductosServiciosHomepage(
+  usuario_logueado: string | null
+) {
   const productos = await ProductoServicio.findAll({
     include: { model: ImagenProductoServicio },
     attributes: [
@@ -75,7 +109,7 @@ export async function getProductosServiciosHomepage(usuario_logueado: string|nul
     ],
     where: {
       usuario_vendedor: {
-        [Op.not]: usuario_logueado
+        [Op.not]: usuario_logueado,
       },
       fecha_autorizacion: {
         [Op.not]: null,
@@ -147,18 +181,18 @@ export async function getCompradoUsuario(username: string) {
 export async function createProductoServicio(input: any) {
   const imagen_producto_servicio = input.imagen;
   delete input.imagen;
-  
+
   const autorizados_vendidos = await ProductoServicio.count({
     where: {
       usuario_vendedor: input.usuario_vendedor,
       usuario_comprador: {
-        [Op.not]: null
-      }
-    }
-  })
+        [Op.not]: null,
+      },
+    },
+  });
 
   input.fecha_publicacion = new Date();
-  input.usuario_autorizador = autorizados_vendidos >= 3 ? 'admin1' : null;
+  input.usuario_autorizador = autorizados_vendidos >= 3 ? "admin1" : null;
   input.fecha_autorizacion = autorizados_vendidos >= 3 ? new Date() : null;
   input.usuario_comprador = null;
   input.fecha_compra = null;
@@ -195,7 +229,10 @@ export async function aprobarProductoServicio(id_producto: number, input: any) {
   return producto;
 }
 
-export async function desaprobarProductoServicio(id_producto: number, input: any) {
+export async function desaprobarProductoServicio(
+  id_producto: number,
+  input: any
+) {
   const producto = await ProductoServicio.findByPk(id_producto);
   if (producto == null) {
     throw new Error("No existe el producto");
@@ -215,10 +252,10 @@ export async function comprarProducto(id_producto: number, input: any) {
   if (producto == null) {
     throw new Error("No existe el producto");
   }
-  
+
   producto.update({
     usuario_comprador: input.usuario_comprador,
-    fecha_compra: new Date()
+    fecha_compra: new Date(),
   });
 
   const cuenta_vendedor = await Cuenta.findByPk(producto.usuario_vendedor);
@@ -229,14 +266,58 @@ export async function comprarProducto(id_producto: number, input: any) {
   if (cuenta_comprador == null) {
     throw new Error(`No existe la cuenta de ${input.usuario_comprador}`);
   }
-  
+
   cuenta_vendedor.update({
-    balance: cuenta_vendedor.balance + producto.precio
+    balance: cuenta_vendedor.balance + producto.precio,
   });
 
   cuenta_comprador.update({
-    balance: cuenta_comprador.balance - producto.precio
+    balance: cuenta_comprador.balance - producto.precio,
   });
-  
+
   return producto;
+}
+
+export async function editarPublicacion(id_producto: number, input: any) {
+  const imagen_producto_servicio = input.imagen;
+  delete input.imagen;
+
+  const producto = await ProductoServicio.findByPk(id_producto);
+  if (producto == null) {
+    throw new Error("No existe el producto");
+  }
+  const productoActualizado = producto.update(input).then((producto) => {
+    if (imagen_producto_servicio != "") {
+      actualizarImagen(
+        imagen_producto_servicio,
+        (producto.id as number).toString()
+      ).then(() => {
+        return ImagenProductoServicio.findByPk(producto.id);
+      });
+    }
+    return producto;
+  });
+  return productoActualizado;
+}
+
+export async function reportarPublicacion(id_producto: number, input: any) {
+  const producto = await ProductoServicio.findByPk(id_producto);
+  if (producto == null) {
+    throw new Error("No existe el producto");
+  }
+  const reporteCreado = await Reporte.create({
+    username_usuario: input.username,
+    id_producto_servicio: id_producto,
+    fecha_reporte: new Date(),
+  });
+  return reporteCreado;
+}
+
+export async function reportes() {
+  const reportes = await Reporte.count({
+    attributes: ["producto_servicio.*"],
+    group: ["id_producto_servicio"],
+    include: [ProductoServicio],
+  });
+  return reportes;
 }
