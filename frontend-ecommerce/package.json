@@ -10,7 +10,10 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "xampp-move": "mkdir -p /opt/lampp/htdocs/front_ecommerce_ts2 && cp -r dist/* /opt/lampp/htdocs/front_ecommerce_ts2 && cp .htaccess /opt/lampp/htdocs/front_ecommerce_ts2",
+    "xampp-win": "",
+    "deploy-xampp": "npm run build && npm run xampp-move"
   },
   "dependencies": {
     "vue": "^3.4.15",

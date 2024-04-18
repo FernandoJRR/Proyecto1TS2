@@ -3,7 +3,7 @@
     <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
       <img src="@/assets/cacao.png" width="30" /> Balance de Cuenta:
       <p v-if="isFetchingProfile" style="display: inline">...</p>
-      <p v-else style="display: inline">{{ cuenta_data.balance }}</p>
+      <p v-else style="display: inline">{{ cuenta_data.balance_cacao }}</p>
     </h1>
 
     <h1 style="font-family: 'Monaco', monospace; color: #fcd667">Taza de Cambio Actual:</h1>
@@ -124,7 +124,7 @@ export default {
   },
   methods: {
     validateVenderCacao(cantidadVender: number) {
-      if (cantidadVender <= this.cuenta.balance) return true
+      if (cantidadVender <= this.cuenta.balance_cacao) return true
       return false
     },
     async comprar() {
@@ -155,7 +155,7 @@ export default {
       const { valid } = await (this.$refs.formVender as any).validate()
       if (!valid) return
 
-      if (this.cacaoVender != null && this.cacaoVender > this.cuenta.balance) {
+      if (this.cacaoVender != null && this.cacaoVender > this.cuenta.balance_cacao) {
         this.detalleVender = 'No cuentas con la cantidad de cacao que quieres vender'
         return
       }

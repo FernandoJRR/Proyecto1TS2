@@ -64,6 +64,45 @@
       </tr>
     </tbody>
   </v-table>
+
+  <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
+    Productos y Servicios Reportados
+  </h1>
+  <v-table theme="dark">
+    <thead>
+      <tr>
+        <th class="text-left">Tipo</th>
+        <th class="text-left">Nombre</th>
+        <th class="text-left">Vendedor</th>
+        <th class="text-left">Precio</th>
+        <th class="text-left">Fecha de Publicacion</th>
+        <th class="text-left">Usuario Autorizador</th>
+        <th class="text-left">Fecha Autorizacion</th>
+        <th class="text-left">Estado</th>
+        <th class="text-left">Reportes</th>
+        <th class="text-left">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="item in productos_reportados" :key="item.id">
+        <td>{{ item.es_servicio ? 'Servicio' : 'Producto' }}</td>
+        <td>{{ item.nombre }}</td>
+        <td>{{ item.usuario_vendedor }}</td>
+        <td>{{ item.precio }}</td>
+        <td>{{ item.fecha_publicacion.split('T')[0] }}</td>
+        <td>{{ item.usuario_autorizador }}</td>
+        <td>{{ item.fecha_autorizacion.split('T')[0] }}</td>
+        <td>{{ item.usuario_comprador == null ? 'Aprobado' : 'Comprado' }}</td>
+        <td>{{ item.count }}</td>
+        <td>
+          <v-btn variant="plain" @click="verProducto(item.id)">Ver</v-btn>
+          <v-btn v-if="item.usuario_comprador == null" variant="plain" @click="desaprobarProducto(item.id)"
+            >Desaprobar</v-btn
+          >
+        </td>
+      </tr>
+    </tbody>
+  </v-table>
 </template>
 
 <script lang="ts">
@@ -75,6 +114,7 @@ export default {
   data: () => ({
     productos_por_autorizar: ref(),
     productos_autorizados: ref(),
+    productos_reportados: ref(),
 
     username: localStorage.getItem('user'),
 
@@ -102,6 +142,11 @@ export default {
           .then((response) => response.json())
           .then((data) => {
             this.productos_autorizados = data
+          })
+        this.getProductosReportados()
+          .then((response) => response.json())
+          .then((data) => {
+            this.productos_reportados = data
           })
       }
     },
@@ -149,6 +194,11 @@ export default {
       return await fetch(`http://localhost:8080/producto-servicio/productos-aprobados`, {
         method: 'GET'
       })
+    },
+    async getProductosReportados() {
+      return await fetch(`http://localhost:8080/producto-servicio/reportes`, {
+        method: 'GET'
+      })
     }
   },
   async created() {
@@ -161,6 +211,11 @@ export default {
       .then((response) => response.json())
       .then((data) => {
         this.productos_autorizados = data
+      })
+    this.getProductosReportados()
+      .then((response) => response.json())
+      .then((data) => {
+        this.productos_reportados = data
       })
     this.isFetching = false
   }

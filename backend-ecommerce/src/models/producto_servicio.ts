@@ -1,7 +1,8 @@
-import { Table, Model, Column, HasMany, HasOne, BelongsTo } from "sequelize-typescript";
+import { Table, Model, Column, HasMany, HasOne, BelongsTo, ForeignKey } from "sequelize-typescript";
 import database from "../database/database";
 import { ImagenProductoServicio } from "./imagen_producto_servicio";
 import { Reporte } from "./reporte";
+import { Categoria } from "./categoria";
 
 @Table({
   tableName: "producto_servicio",
@@ -24,8 +25,9 @@ export class ProductoServicio extends Model {
   declare usuario_vendedor: number
   @Column
   declare fecha_publicacion: Date
-  //@Column
-  //declare id_categoria: number
+  @ForeignKey(() => Categoria)
+  @Column
+  declare id_categoria: number
   @Column
   declare usuario_autorizador: number
   @Column
@@ -40,9 +42,14 @@ export class ProductoServicio extends Model {
   declare fecha_baja: Date
   @Column({allowNull: false})
   declare es_servicio: boolean
+
+  @Column({allowNull: false})
   declare disponible_por_trueque: boolean
   
   @HasOne(() => ImagenProductoServicio)
   declare imagenProductoServicio: ImagenProductoServicio;
+
+  @BelongsTo(() => Categoria)
+  declare categoria: Categoria;
 }
 database.addModels([ProductoServicio])

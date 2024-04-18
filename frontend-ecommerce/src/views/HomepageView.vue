@@ -17,7 +17,7 @@
     </h1>
     <h1 v-else style="font-family: 'Monaco', monospace; color: #fcd667">Resultados</h1>
     <h3 v-if="productos.length == 0">No hay productos que mostrar :(</h3>
-    <v-container v-for="item in productos as any[]" :key="item.id">
+    <v-container v-else v-for="item in productos as any[]" :key="item.id">
       <ProductCard
         :id="item.id"
         :tipo="item.es_servicio ? 'Servicio' : 'Producto'"
@@ -26,6 +26,8 @@
         :vendedor="item.usuario_vendedor"
         :fecha_publicacion="item.fecha_publicacion"
         :imagen_publicacion="item.imagenProductoServicio.imagen_base64"
+        :categoria="item.categoria.nombre"
+        :disponible_trueque="item.disponible_por_trueque"
       />
     </v-container>
   </v-container>

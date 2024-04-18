@@ -10,6 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       id_chat: {
+        allowNull: false,
         type: Sequelize.INTEGER,
         references: {model: 'chat', key: 'id'}
       },

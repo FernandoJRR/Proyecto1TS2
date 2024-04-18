@@ -48,6 +48,30 @@ module.exports = {
           imagen_base64:
             "default.ib64",
         },
+        {
+          id_producto_servicio: 8,
+          updatedAt: new Date(),
+          imagen_base64:
+            "default.ib64",
+        },
+        {
+          id_producto_servicio: 9,
+          updatedAt: new Date(),
+          imagen_base64:
+            "default.ib64",
+        },
+        {
+          id_producto_servicio: 10,
+          updatedAt: new Date(),
+          imagen_base64:
+            "default.ib64",
+        },
+        {
+          id_producto_servicio: 11,
+          updatedAt: new Date(),
+          imagen_base64:
+            "default.ib64",
+        },
       ],
     );
   },

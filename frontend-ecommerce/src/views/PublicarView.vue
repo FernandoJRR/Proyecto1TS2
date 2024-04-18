@@ -5,13 +5,20 @@
     </h1>
 
     <v-form ref="form" @submit.prevent="publicar">
-      <v-select
-        v-model="tipoPublicacion"
-        :rules="tipoPublicacionRules"
-        label="Tipo"
-        :items="['Producto', 'Servicio']"
-        style="width: 75%"
-      />
+      <v-row>
+        <v-col cols="7" style="margin-left: 6%;">
+          <v-select
+            v-model="tipoPublicacion"
+            :rules="tipoPublicacionRules"
+            label="Tipo"
+            :items="['Producto', 'Servicio']"
+            style="width: 75%"
+          />
+        </v-col>
+        <v-col cols="2">
+          <v-checkbox v-model="disponible_trueque" label="Disponible por Trueque" />
+        </v-col>
+      </v-row>
       <v-text-field
         v-model="nombre"
         :rules="nombreRules"
@@ -37,6 +44,15 @@
         style="width: 75%"
         required
       ></v-text-field>
+      <v-select
+        v-model="id_categoria"
+        :rules="idCategoriaRules"
+        label="Categoria"
+        :items="categorias"
+        item-title="nombre"
+        item-value="id"
+        style="width: 75%"
+      />
       <v-row justify="center">
         <v-col cols="5">
           <v-file-input @change="uploadImage" label="Imagen producto" />
@@ -61,6 +77,8 @@ export default {
   data: () => ({
     isFetching: true,
 
+    categorias: ref(),
+
     tipoPublicacion: '',
     tipoPublicacionRules: [(value: any) => !!value || 'Tipo de publicacion requerido!'],
     nombre: '',
@@ -72,10 +90,12 @@ export default {
       (value: any) => !!value || 'Precio requerido',
       (value: any) => value > 0 || 'El precio ingresado no es valido'
     ],
+    id_categoria: '',
+    idCategoriaRules: [(value: any) => !!value || 'Categoria requerida!'],
+    disponible_trueque: false,
     detalle: '',
 
     user: ref(localStorage.getItem('user')),
-    cuenta: ref(),
 
     taza_cambio: ref(mockdata.tipo_cambio.cacao_por_quetzal),
 
@@ -91,7 +111,9 @@ export default {
         descripcion: this.descripcion,
         precio: this.precio,
         imagen: this.imagen,
-        usuario_vendedor: this.user
+        usuario_vendedor: this.user,
+        id_categoria: this.id_categoria,
+        disponible_por_trueque: this.disponible_trueque
       })
       const data = await response.json()
       //Se comprueba si las credenciales son correctas
@@ -135,11 +157,19 @@ export default {
         }
         fileReader.readAsDataURL(file)
       }
+    },
+    async getCategorias() {
+      return await fetch(`http://localhost:8080/categorias`, {
+        method: 'GET'
+      })
     }
   },
   async created() {
-    this.cuenta = ref(mockdata.cuentas[this.user as keyof typeof mockdata.cuentas])
-    this.isFetching = false
+    this.getCategorias()
+      .then((response) => response.json())
+      .then((data) => {
+        this.categorias = data
+      })
   }
 }
 </script>

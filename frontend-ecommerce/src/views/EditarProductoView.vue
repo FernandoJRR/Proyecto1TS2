@@ -15,14 +15,22 @@
       <v-col cols="5"> </v-col>
     </v-row>
     <v-form ref="form" @submit.prevent="editar">
-      <v-select
-        v-model="tipoPublicacion"
-        :rules="tipoPublicacionRules"
-        label="Tipo"
-        :items="['Producto', 'Servicio']"
-        style="width: 75%"
-        disabled
-      />
+      <v-row>
+        <v-col cols="7" style="margin-left: 6%;">
+          <v-select
+            v-model="tipoPublicacion"
+            :rules="tipoPublicacionRules"
+            label="Tipo"
+            :items="['Producto', 'Servicio']"
+            style="width: 75%"
+            disabled
+          />
+        </v-col>
+        <v-col cols="2">
+          <v-checkbox v-model="disponible_trueque" label="Disponible por Trueque" />
+        </v-col>
+      </v-row>
+
       <v-text-field
         v-model="nombre"
         :rules="nombreRules"
@@ -48,6 +56,15 @@
         style="width: 75%"
         required
       ></v-text-field>
+      <v-select
+        v-model="id_categoria"
+        :rules="idCategoriaRules"
+        label="Categoria"
+        :items="categorias"
+        item-title="nombre"
+        item-value="id"
+        style="width: 75%"
+      />
       <v-file-input @change="uploadImage" label="Imagen producto" style="width: 75%" />
       <v-row justify="center">
         <v-col cols="5">
@@ -94,6 +111,11 @@ export default {
       (value: any) => value > 0 || 'El precio ingresado no es valido'
     ],
     detalle: '',
+    id_categoria: ref(),
+    idCategoriaRules: [(value: any) => !!value || 'Categoria requerida!'],
+    disponible_trueque: false,
+
+    categorias: [],
 
     username: localStorage.getItem('user'),
     userType: localStorage.getItem('userType'),
@@ -110,7 +132,9 @@ export default {
         nombre: this.nombre,
         descripcion: this.descripcion,
         precio: this.precio,
-        imagen: this.imagen
+        imagen: this.imagen,
+        id_categoria: this.id_categoria,
+        disponible_por_trueque: this.disponible_trueque
       })
       const data = await response.json()
       //Se comprueba si las credenciales son correctas
@@ -129,6 +153,8 @@ export default {
             this.nombre = this.producto.nombre
             this.descripcion = this.producto.descripcion
             this.precio = this.producto.precio
+            this.id_categoria = this.producto.categoria.id
+            this.disponible_trueque = this.producto.disponible_por_trueque
             this.isFetchingProduct = false
 
             this.getPublicationImage(this.producto.id)
@@ -183,6 +209,11 @@ export default {
         method: 'GET'
       })
     },
+    async getCategorias() {
+      return await fetch(`http://localhost:8080/categorias`, {
+        method: 'GET'
+      })
+    },
     volver() {
       router.go(-1)
     }
@@ -196,6 +227,8 @@ export default {
         this.nombre = this.producto.nombre
         this.descripcion = this.producto.descripcion
         this.precio = this.producto.precio
+        this.id_categoria = this.producto.categoria.id
+        this.disponible_trueque = this.producto.disponible_por_trueque
         this.isFetchingProduct = false
 
         this.getPublicationImage(this.producto.id)
@@ -204,6 +237,11 @@ export default {
             this.imagen_producto = data
             this.isFetchingImage = false
           })
+      })
+    this.getCategorias()
+      .then((response) => response.json())
+      .then((data) => {
+        this.categorias = data
       })
   }
 }

@@ -15,6 +15,9 @@ export class Cuenta extends Model<Cuenta> {
   declare username: string;
 
   @Column({ allowNull: false })
-  declare balance: number;
+  declare balance_cacao: number;
+
+  @Column({ allowNull: false })
+  declare balance_puntos: number;
 }
 database.addModels([Cuenta]);

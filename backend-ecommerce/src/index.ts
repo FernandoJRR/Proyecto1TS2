@@ -10,6 +10,8 @@ import tipoCambioRoutes from "./routes/tipo_cambio";
 import cacaoRoutes from "./routes/cacao";
 import productoServicioRoutes from "./routes/producto_servicio";
 import chatsRoutes from "./routes/chat_servicio";
+import transaccionesRoutes from "./routes/transacciones";
+import categoriaRoutes from "./routes/categorias";
 
 dotenv.config();
 
@@ -29,6 +31,8 @@ app.use('/usuario', usuarioRoutes)
 app.use('/taza-cambio', tipoCambioRoutes)
 app.use('/cacao', cacaoRoutes)
 app.use('/producto-servicio', productoServicioRoutes)
+app.use('/transacciones', transaccionesRoutes)
+app.use('/categorias', categoriaRoutes)
 app.use('/chats', chatsRoutes)
 
 app.listen(port, () => {

@@ -5,9 +5,10 @@ import {
   HasMany,
   HasOne,
   ForeignKey,
+  BelongsTo,
 } from "sequelize-typescript";
 import database from "../database/database";
-import { Usuario } from "./usuario";
+import { Cuenta } from "./cuenta";
 
 @Table({
   tableName: "transaccion",
@@ -17,7 +18,7 @@ export class Transaccion extends Model {
   @Column({primaryKey: true})
   declare id: number;
 
-  @ForeignKey(() => Usuario)
+  @ForeignKey(() => Cuenta)
   @Column
   declare username_cuenta: string;
 
@@ -38,5 +39,8 @@ export class Transaccion extends Model {
 
   @Column
   declare fecha_transaccion: Date;
+  
+  @BelongsTo(() => Cuenta)
+  declare cuenta: Cuenta;
 }
 database.addModels([Transaccion]);

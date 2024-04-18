@@ -52,11 +52,47 @@
     <br />
     <br />
     <v-container v-if="userType == 'usuario'">
+      <v-row>
+        <v-col>
+          <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
+            <img src="@/assets/cacao.png" width="30" /> Balance de Cuenta Cacao:
+            <p v-if="isFetching" style="display: inline">...</p>
+            <p v-else style="display: inline">{{ cuenta_data.balance_cacao }}</p>
+          </h1>
+        </v-col>
+        <v-col>
+          <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
+            <img src="@/assets/cacao.png" width="30" /> Balance de Cuenta Puntos:
+            <p v-if="isFetching" style="display: inline">...</p>
+            <p v-else style="display: inline">{{ cuenta_data.balance_puntos }}</p>
+          </h1>
+        </v-col>
+      </v-row>
       <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
-        <img src="@/assets/cacao.png" width="30" /> Balance de Cuenta:
-        <p v-if="isFetching" style="display: inline">...</p>
-        <p v-else style="display: inline">{{ cuenta_data.balance }}</p>
+        <v-icon icon="mdi-account" /> Ultimas Transacciones:
       </h1>
+      <v-table theme="dark">
+        <thead>
+          <tr>
+            <th class="text-left">Fecha Transaccion</th>
+            <th class="text-left">Monto Cacao</th>
+            <th class="text-left">Balance de Cacao</th>
+            <th class="text-left">Monto Puntos</th>
+            <th class="text-left">Balance de Puntos</th>
+            <th class="text-left">Motivo de Transaccion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in transacciones_usuario" :key="item.id">
+            <td>{{ item.fecha_transaccion }}</td>
+            <td>{{ item.monto_cacao }}</td>
+            <td>{{ item.balance_cacao }}</td>
+            <td>{{ item.monto_puntos }}</td>
+            <td>{{ item.balance_puntos }}</td>
+            <td>{{ item.motivo }}</td>
+          </tr>
+        </tbody>
+      </v-table>
       <br />
       <br />
       <h1 style="font-family: 'Monaco', monospace; color: #fcd667; margin-bottom: 3vh">
@@ -157,7 +193,8 @@ export default {
     cuenta: ref(),
 
     productos_publicados: ref(),
-    productos_comprados: ref()
+    productos_comprados: ref(),
+    transacciones_usuario: ref()
   }),
   computed: {
     user_data: {
@@ -203,8 +240,8 @@ export default {
       if (response.status != 200) {
         this.detalle = data
       } else {
-        this.detalle = "";
-        (this.$refs.form as any).reset();
+        this.detalle = ''
+        ;(this.$refs.form as any).reset()
         toast(data, { position: toast.POSITION.BOTTOM_CENTER })
       }
     },
@@ -223,15 +260,26 @@ export default {
         method: 'GET'
       })
     },
-    async getPublicacionesUsuario() {
-      return await fetch(`http://localhost:8080/producto-servicio/publicaciones-usuario/${this.username}`, {
+    async getTransaccionesUsuario() {
+      return await fetch(`http://localhost:8080/transacciones/${this.username}`, {
         method: 'GET'
       })
     },
+    async getPublicacionesUsuario() {
+      return await fetch(
+        `http://localhost:8080/producto-servicio/publicaciones-usuario/${this.username}`,
+        {
+          method: 'GET'
+        }
+      )
+    },
     async getCompradoUsuario() {
-      return await fetch(`http://localhost:8080/producto-servicio/comprado-usuario/${this.username}`, {
-        method: 'GET'
-      })
+      return await fetch(
+        `http://localhost:8080/producto-servicio/comprado-usuario/${this.username}`,
+        {
+          method: 'GET'
+        }
+      )
     }
   },
   async created() {
@@ -253,6 +301,12 @@ export default {
       .then((response) => response.json())
       .then((data) => {
         this.productos_comprados = data
+      })
+
+    this.getTransaccionesUsuario()
+      .then((response) => response.json())
+      .then((data) => {
+        this.transacciones_usuario = data
       })
   }
 }

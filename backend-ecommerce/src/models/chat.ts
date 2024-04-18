@@ -4,10 +4,13 @@ import {
   Column,
   BelongsTo,
   ForeignKey,
+  HasMany,
 } from "sequelize-typescript";
 import database from "../database/database";
+import { Mensaje } from "./mensaje";
+import { ProductoServicio } from "./producto_servicio";
 
-@Table({ tableName: "chat", timestamps: false })
+@Table({ tableName: "chat", timestamps: true })
 export class Chat extends Model {
   @Column({ primaryKey: true })
   declare id: number;
@@ -18,6 +21,7 @@ export class Chat extends Model {
   @Column
   declare id_usuario_2: string;
 
+  @ForeignKey(() => ProductoServicio)
   @Column
   declare id_producto_servicio: number;
 
@@ -26,5 +30,11 @@ export class Chat extends Model {
 
   @Column
   declare fecha_finalizacion: Date;
+
+  @BelongsTo(() => ProductoServicio)
+  declare producto_servicio: ProductoServicio;
+  
+  @HasMany(() => Mensaje)
+  declare mensaje: Mensaje[];
 }
 database.addModels([Chat]);

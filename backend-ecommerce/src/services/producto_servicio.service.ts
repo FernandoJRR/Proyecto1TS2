@@ -10,6 +10,8 @@ import {
 } from "../handler/image.handler";
 import { Usuario } from "../models/usuario";
 import { Cuenta } from "../models/cuenta";
+import { Categoria } from "../models/categoria";
+import { Transaccion } from "../models/transaccion";
 
 const include_formated_dates = [
   [
@@ -32,7 +34,7 @@ const include_formated_dates = [
 
 export async function getProducto(id_producto: number) {
   const productos = await ProductoServicio.findByPk(id_producto, {
-    include: { model: ImagenProductoServicio },
+    include: [ImagenProductoServicio, Categoria],
     attributes: {
       include: [
         [
@@ -90,7 +92,7 @@ export async function getProductosServiciosHomepage(
   usuario_logueado: string | null
 ) {
   const productos = await ProductoServicio.findAll({
-    include: { model: ImagenProductoServicio },
+    include: [ImagenProductoServicio, Categoria],
     attributes: [
       "id",
       "nombre",
@@ -98,6 +100,7 @@ export async function getProductosServiciosHomepage(
       "precio",
       "usuario_vendedor",
       "es_servicio",
+      "disponible_por_trueque",
       [
         sequelize.fn(
           "date_format",
@@ -268,12 +271,30 @@ export async function comprarProducto(id_producto: number, input: any) {
   }
 
   cuenta_vendedor.update({
-    balance: cuenta_vendedor.balance + producto.precio,
+    balance_cacao: cuenta_vendedor.balance_cacao + producto.precio,
   });
+    Transaccion.create({
+        username_cuenta: producto.usuario_vendedor,
+        monto_cacao: producto.precio,
+        balance_cacao: cuenta_vendedor.balance_cacao,
+        monto_puntos: 0,
+        balance_puntos: cuenta_vendedor.balance_puntos,
+        motivo: `Venta de Producto ${producto.nombre}`,
+        fecha_transaccion: new Date(),
+    });
 
   cuenta_comprador.update({
-    balance: cuenta_comprador.balance - producto.precio,
+    balance_cacao: cuenta_comprador.balance_cacao - producto.precio,
   });
+    Transaccion.create({
+        username_cuenta: producto.usuario_comprador,
+        monto_cacao: -producto.precio,
+        balance_cacao: cuenta_comprador.balance_cacao,
+        monto_puntos: 0,
+        balance_puntos: cuenta_comprador.balance_puntos,
+        motivo: `Compra de Producto ${producto.nombre}`,
+        fecha_transaccion: new Date(),
+    });
 
   return producto;
 }
